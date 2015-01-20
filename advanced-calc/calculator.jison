@@ -1,5 +1,8 @@
 /* lexical grammar */
 %lex
+
+%options case-insensitive
+
 %%
 
 \s+                   /* skip whitespace */
@@ -17,14 +20,14 @@
 "|"                   return '|'
 "PI"                  return 'PI'
 "E"                   return 'E'
-"if"                  return 'IF'
-"then"                return 'THEN'
-"else"                return 'ELSE'
-"true"                return 'TRUE'
-"false"               return 'FALSE'
-"let"                 return 'LET'
+IF                    return 'IF'
+THEN                  return 'THEN'
+ELSE                  return 'ELSE'
+TRUE                  return 'TRUE'
+FALSE                 return 'FALSE'
+LET                   return 'LET'
 "="                   return '='
-"in"                  return 'IN'
+IN                    return 'IN'
 [a-zA-Z][a-zA-Z0-9]*  return 'ID'
 <<EOF>>               return 'EOF'
 .                     return 'INVALID'
