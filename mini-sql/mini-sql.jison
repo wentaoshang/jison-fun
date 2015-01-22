@@ -367,7 +367,7 @@ simple_expr
         { $$ = ['TABCOL', $1, '*']; }
     | NAME '.' NAME
         { $$ = ['TABCOL', $1, $3]; }
-    | NAME '(' expr ')'
+    | NAME '(' expr_list ')'
         { $$ = ['FUNCALL', $1, $3]; }
     | NAME '(' '*' ')'
         { $$ = ['FUNCALL', $1, '*']; }
