@@ -11,7 +11,9 @@ var tests = ["SELECT *",
 	     "SELECT COUNT(*) FROM t WHERE x >= 0.5 AND y <> X'0fffa' ORDER BY z",
 	     "SELECT AVG(t.a) FROM b t HAVING t.b > 0X5ABB",
 	     "SELECT * FROM t WHERE x < B'0011' ORDER BY y LIMIT 1, 1",
-	     "SELECT * FROM t WHERE x = (SELECT MIN(x) FROM t)"
+	     "SELECT * FROM t WHERE x = (SELECT MIN(x) FROM t)",
+	     "SELECT TRUE WHERE EXISTS (SELECT * FROM t WHERE t > 0B01110)",
+	     "SELECT t1.a, t1.b FROM t t1 WHERE t1.c IN (SELECT n FROM num)",
 	     ];
 
 tests.forEach(function (item) {

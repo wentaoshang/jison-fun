@@ -215,14 +215,14 @@ opt_where
 opt_groupby
     : /* could be empty */
         { $$ = null; }
-    | GROUP BY groupby_list opt_asc_desc
+    | GROUP BY expr_list opt_asc_desc
         { $$ = ['GROUPBY', $3, $4]; }
     ;
 
-groupby_list
+expr_list
     : expr
         { $$ = [$1]; }
-    | expr ',' groupby_list
+    | expr ',' expr_list
         { $3.unshift($1); $$ = $3; }
     ;
 
@@ -256,7 +256,7 @@ opt_limit
 opt_orderby
     : /* could be empty */
         { $$ = null; }
-    | ORDER BY groupby_list opt_asc_desc
+    | ORDER BY expr_list opt_asc_desc
         { $$ = ['ORDERBY', $3, $4]; }
     ;
 
@@ -310,7 +310,15 @@ boolean_primary
     ;
 
 predicate
-    : bit_expr BETWEEN bit_expr BTWAND predicate %prec BETWEEN
+    : bit_expr IN '(' subquery ')'
+        { $$ = ['IN', $1, $4]; }
+    | bit_expr NOT IN '(' subquery ')'
+        { $$ = ['NOTIN', $1, $5]; }
+    | bit_expr IN '(' expr_list ')'
+        { $$ = ['IN', $1, $4]; }
+    | bit_expr NOT IN '(' expr_list ')'
+        { $$ = ['NOTIN', $1, $5]; }
+    | bit_expr BETWEEN bit_expr BTWAND predicate %prec BETWEEN
         { $$ = ['AND', ['GE', $1, $3], ['LE', $1, $5]]; }
     | bit_expr NOT BETWEEN bit_expr BTWAND predicate
         { $$ = ['OR', ['LT', $1, $3], ['GT', $1, $5]]; }
