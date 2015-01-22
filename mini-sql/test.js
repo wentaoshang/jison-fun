@@ -11,11 +11,12 @@ var tests = ["SELECT *",
 	     "SELECT COUNT(*) FROM t WHERE x >= 0.5 AND y <> X'0fffa' ORDER BY z",
 	     "SELECT AVG(t.a) FROM b t HAVING t.b > 0X5ABB",
 	     "SELECT * FROM t WHERE x < B'0011' ORDER BY y LIMIT 1, 1",
+	     "SELECT * FROM t WHERE x = (SELECT MIN(x) FROM t)"
 	     ];
 
 tests.forEach(function (item) {
     console.log(item);
     var ast = parser.parse(item);
-    console.log('--> %s', util.inspect(ast, {depth: 5}));
+    console.log('--> %s', util.inspect(ast, {depth: 10}));
     //console.log('--> %s', eval(ast, []));
   });

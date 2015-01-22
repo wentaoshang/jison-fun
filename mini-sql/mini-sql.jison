@@ -13,6 +13,7 @@
 
 /* keywords for statements */
 ALL	  return 'ALL'
+ANY 	  return 'ANY'
 DISTINCT  return 'DISTINCT'
 DISTINCTROW  return 'DISTINCTROW'
 SELECT	  return 'SELECT'
@@ -71,8 +72,6 @@ NOT	  return 'NOT'
 "!" 	  return '!'
 IS	  return 'IS'
 NULL	  return 'NULL'
-ALL	  return 'ALL'
-ANY	  return 'ANY'
 "="	  return '='
 ">="	  return '>='
 ">"	  return '>'
@@ -137,10 +136,14 @@ stmt
         { return $1; }
     ;
 
+subquery
+    : select_stmt { $$ = $1; }
+    ;
+
 select_stmt
     : SELECT select_opts select_expr_list opt_from opt_where
       opt_groupby opt_having opt_orderby opt_limit
-        { $$ = [['SELECT', $2, $3, $4], $5, $6, $7, $8, $9]; }
+        { $$ = [['SELECT', $2, $3], $4, $5, $6, $7, $8, $9]; }
     ;
 
 select_opts
@@ -278,23 +281,30 @@ expr
         { $$ = $1; }
     ;
 
+comparison_ops
+    : '='  { $$ = 'EQ'; }
+    | '>=' { $$ = 'GE'; }
+    | '>'  { $$ = 'GT'; }
+    | '<=' { $$ = 'LE'; }
+    | '<'  { $$ = 'LT'; }
+    | '<>' { $$ = 'NE'; }
+    | '!=' { $$ = 'NE'; }
+    ;
+
+all_or_any
+    : ALL  { $$ = 'ALL'; }
+    | ANY  { $$ = 'ANY'; }
+    ;
+
 boolean_primary
     : boolean_primary IS NULL
-        { $$ = ['==', $1, null]; }
+        { $$ = ['EQ', $1, null]; }
     | boolean_primary IS NOT NULL
-        { $$ = ['!=', $1, null]; }
-    | boolean_primary '=' predicate
-        { $$ = ['EQ', $1, $3]; }
-    | boolean_primary '>=' predicate
-        { $$ = ['GE', $1, $3]; }
-    | boolean_primary '>' predicate
-        { $$ = ['GT', $1, $3]; }
-    | boolean_primary '<=' predicate
-        { $$ = ['LE', $1, $3]; }
-    | boolean_primary '<' predicate
-        { $$ = ['LT', $1, $3]; }
-    | boolean_primary '<>' predicate
-        { $$ = ['NE', $1, $3]; }
+        { $$ = ['NE', $1, null]; }
+    | boolean_primary comparison_ops predicate
+        { $$ = [$2, $1, $3]; }
+    | boolean_primary comparison_ops all_or_any '(' subquery ')'
+        { $$ = [$2, $1, $3, $4]; }
     | predicate
         { $$ = $1; }
     ;
@@ -354,4 +364,8 @@ simple_expr
         { $$ = ['FUNCALL', $1, $3]; }
     | NAME '(' '*' ')'
         { $$ = ['FUNCALL', $1, '*']; }
+    | '(' subquery ')'
+        { $$ = $2; }
+    | EXISTS '(' subquery ')'
+        { $$ = ['EXISTS', $3]; }
     ;
