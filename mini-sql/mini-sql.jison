@@ -138,8 +138,9 @@ stmt
     ;
 
 select_stmt
-    : SELECT select_opts select_expr_list opt_from opt_where opt_groupby opt_orderby
-        { $$ = ['SELECT', $2, $3, $4, $5, $6, $7]; }
+    : SELECT select_opts select_expr_list opt_from opt_where
+      opt_groupby opt_having opt_orderby opt_limit
+        { $$ = [['SELECT', $2, $3, $4], $5, $6, $7, $8, $9]; }
     ;
 
 select_opts
@@ -155,8 +156,6 @@ select_expr_list
         { $$ = [$1]; }
     | select_expr ',' select_expr_list
         { $3.unshift($1); $$ = $3; }
-    | '*'
-        { $$ = ['*']; }
     ;
 
 select_expr
@@ -166,10 +165,8 @@ select_expr
         { $$ = ['AS', $1, $2]; }
     | expr AS NAME
         { $$ = ['AS', $1, $3]; }
-    | NAME '.' '*'
-        { $$ = ['TABCOL', $1, '*']; }
-    | NAME '.' NAME
-        { $$ = ['TABCOL', $1, $3]; }
+    | '*'
+        { $$ = '*'; }
     ;
 
 opt_from
@@ -233,6 +230,24 @@ opt_asc_desc
         { $$ = 'ASC'; }
     | DESC
         { $$ = 'DESC'; }
+    ;
+
+opt_having
+    : /* could be empty */
+        { $$ = null; }
+    | HAVING expr
+        { $$ = ['HAVING', $2]; }
+    ;
+
+opt_limit
+    : /* could be empty */
+        { $$ = null; }
+    | LIMIT expr
+        { $$ = ['LIMIT', 0, $2]; }
+    | LIMIT expr ',' expr
+        { $$ = ['LIMIT', $2, $4]; }
+    | LIMIT expr OFFSET expr
+        { $$ = ['LIMIT', $4, $2]; }
     ;
 
 opt_orderby
@@ -331,6 +346,10 @@ simple_expr
         { $$ = yytext; }
     | NAME
         { $$ = yytext; }
+    | NAME '.' '*'
+        { $$ = ['TABCOL', $1, '*']; }
+    | NAME '.' NAME
+        { $$ = ['TABCOL', $1, $3]; }
     | NAME '(' expr ')'
         { $$ = ['FUNCALL', $1, $3]; }
     | NAME '(' '*' ')'
