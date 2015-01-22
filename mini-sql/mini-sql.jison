@@ -98,7 +98,6 @@ ROW	  return 'ROW'
 EXISTS	  return 'EXISTS'
 "("	  return '('
 ")" 	  return ')'
-"~"       return '~'
 
 ","	  return ','
 "."	  return '.'
@@ -123,9 +122,9 @@ EXISTS	  return 'EXISTS'
 %left '+' '-'
 %left '*' '/' '%'
 %left '^'
-%nonassoc UMINUS
+%nonassoc UMINUS '~'
 %nonassoc '!'
-%onoassoc BINARY
+%nonassoc BINARY
 
 %start stmt
 
@@ -148,7 +147,7 @@ select_stmt
 
 select_opts
     :  /* could be empty */
-        { $$ = null; }
+        { $$ = 'ALL'; }  /* default to ALL */
     | ALL
     | DISTINCT
     | DISTINCTROW
@@ -376,4 +375,12 @@ simple_expr
         { $$ = $2; }
     | EXISTS '(' subquery ')'
         { $$ = ['EXISTS', $3]; }
+    | '(' expr_list ')'
+        { $$ = $2; }
+    | '-' simple_expr %prec UMINUS
+        { $$ = ['NEG', $2]; }
+    | '~' simple_expr
+        { $$ = ['~', $2]; }
+    | '!' simple_expr
+        { $$ = ['!', $2]; }
     ;
