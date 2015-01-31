@@ -20,6 +20,10 @@ var tests = ["SELECT *",
 	     "SELECT * FROM t WHERE x = (SELECT MIN(x) FROM t)",
 	     "SELECT TRUE WHERE EXISTS (SELECT * FROM t WHERE t > 0B01110)",
 	     "SELECT t1.a, t1.b FROM t t1 WHERE t1.c IN (SELECT n FROM num)",
+	     "SELECT * FROM t1, t2, t3",
+	     "SELECT * FROM t1 INNER JOIN t2 ON t1.name = t2.name",
+	     "SELECT * FROM t1 LEFT JOIN (t2, t3, t4) ON (t2.a=t1.a AND t3.b=t1.b AND t4.c=t1.c)",
+	     "SELECT * FROM table1 LEFT JOIN table2 ON table1.id=table2.id LEFT JOIN table3 ON table2.id=table3.id;",
 	     ];
 
 tests.forEach(function (item) {

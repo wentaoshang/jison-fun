@@ -31,6 +31,15 @@ ORDER	  return 'ORDER'
 LIMIT	  return 'LIMIT'
 OFFSET	  return 'OFFSET'
 
+JOIN      return 'JOIN'
+ON        return 'ON'
+INNER     return 'INNER'
+CROSS     return 'CROSS'
+OUTER     return 'OUTER'
+LEFT      return 'LEFT'
+RIGHT     return 'RIGHT'
+NATURAL   return 'NATURAL'
+
 /* SQL literals */
 
 [-]?[0-9]+                       return 'INT'
@@ -180,12 +189,14 @@ opt_from
 
 table_references
     : table_reference
-    /* only allow a single table reference */
+        { $$ = [$1]; }
+    | table_reference ',' table_references
+        { $3.unshift($1); $$ = $3; }
     ;
 
 table_reference
     : table_factor
-    /* do not support joins for now */
+    | join_table
     ;
 
 table_factor
@@ -195,6 +206,8 @@ table_factor
         { $$ = ['AS', $1, $2]; }
     | table_id AS NAME
         { $$ = ['AS', $1, $3]; }
+    | '(' table_references ')'
+        { $$ = $2; }
     ;
 
 table_id
@@ -204,9 +217,34 @@ table_id
         { $$ = ['DBTAB', $1, $3]; }
     ;
 
+join_table
+      /* use SQL standard definition of CROSS JOIN, i.e., no ON clause can be used */
+    : table_reference CROSS JOIN table_factor
+        { $$ = ['CROSSJOIN', $1, $4]; }
+      /* use SQL standard definition of INNER JOIN, i.e., ON clause must be used */
+    | table_reference opt_inner JOIN table_factor ON expr
+        { $$ = ['INNERJOIN', $1, $4, $6]; }
+    | table_reference LEFT opt_outer JOIN table_factor ON expr
+        { $$ = ['LEFTJOIN', $1, $5, $7]; }
+    | table_reference RIGHT opt_outer JOIN table_factor ON expr
+        { $$ = ['RIGHTJOIN', $1, $5, $7]; }
+    | table_reference NATURAL JOIN table_factor
+        { $$ = ['NATURALJOIN', $1, $4]; }
+    ;
+
+opt_inner
+    : /* could be empty */
+    | INNER
+    ;
+
+opt_outer
+    : /* could be empty */
+    | OUTER
+    ;
+
 opt_where
     :  /* could be empty */
-        {$$ = null; }
+        { $$ = null; }
     | WHERE expr
         { $$ = ['WHERE', $2]; }
     ;
