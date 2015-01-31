@@ -24,6 +24,7 @@ var tests = ["SELECT *",
 	     "SELECT * FROM t1 INNER JOIN t2 ON t1.name = t2.name",
 	     "SELECT * FROM t1 LEFT JOIN (t2, t3, t4) ON (t2.a=t1.a AND t3.b=t1.b AND t4.c=t1.c)",
 	     "SELECT * FROM table1 LEFT JOIN table2 ON table1.id=table2.id LEFT JOIN table3 ON table2.id=table3.id;",
+	     "SELECT * FROM (SELECT 1, 2, 3) AS t1",
 	     ];
 
 tests.forEach(function (item) {

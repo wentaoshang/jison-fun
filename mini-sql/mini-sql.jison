@@ -172,9 +172,7 @@ select_expr_list
 select_expr
     : expr
         { $$ = $1; }
-    | expr NAME
-        { $$ = ['AS', $1, $2]; }
-    | expr AS NAME
+    | expr opt_as NAME
         { $$ = ['AS', $1, $3]; }
     | '*'
         { $$ = '*'; }
@@ -202,12 +200,17 @@ table_reference
 table_factor
     : table_id
         { $$ = $1; }
-    | table_id NAME
-        { $$ = ['AS', $1, $2]; }
-    | table_id AS NAME
+    | table_id opt_as NAME
         { $$ = ['AS', $1, $3]; }
+    | '(' subquery ')' opt_as NAME
+        { $$ = ['AS', $2, $5]; }
     | '(' table_references ')'
         { $$ = $2; }
+    ;
+
+opt_as
+    : /* could be emtyp */
+    | AS
     ;
 
 table_id
